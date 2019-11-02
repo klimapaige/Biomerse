@@ -11,6 +11,7 @@ var corsOptions = {
 //app.use(cors(corsOptions));
 app.use(cors());
 app.use(bodyParser.json());
+app.use(express.static('scripts'));
 var db
 
 MongoClient.connect('mongodb://127.0.0.1:27017',{useUnifiedTopology: true}, (err, client) => {
@@ -21,12 +22,30 @@ MongoClient.connect('mongodb://127.0.0.1:27017',{useUnifiedTopology: true}, (err
   })
 })
 
+//connection route
 biomerseRoutes.route('/').get(function (req, res) {
     res.status(200).json({ 'Connection': 'connected to server successfully' })
+});
+
+//interacion routes
+biomerseRoutes.route('/interaction/:id').get(cors(corsOptions),function(req, res){
+    var id = req.params.id;
+    res.status(200);
+    var cursor = db.collection('Interactions').find({'interaction_id':id}).toArray(function(err, results) {
+        //res.header("Access-Control-Allow-Origin", 'http://localhost:3000');
+        res.status(200).json(results);
+    })
 });
 biomerseRoutes.route('/interaction').get(cors(corsOptions),function(req, res){
     var cursor = db.collection('Interactions').find().toArray(function(err, results) {
         //res.header("Access-Control-Allow-Origin", 'http://localhost:3000');
+        res.status(200).json(results);
+    })
+});
+
+//process routes
+biomerseRoutes.route('/process/:id').get(function(req, res){
+    var cursor = db.collection('Processes').find().toArray(function(err, results) {
         res.status(200).json(results);
     })
 });
@@ -35,5 +54,18 @@ biomerseRoutes.route('/process').get(function(req, res){
         res.status(200).json(results);
     })
 });
+
+//script routes
+biomerseRoutes.route('/script/xeogl').get(cors(corsOptions),function(req, res){
+    var id = req.params.id;
+    res.status(200);
+    res.sendFile(__dirname+'/scripts/xeogl/xeogl.js');
+});
+biomerseRoutes.route('/script/interaction/:id').get(cors(corsOptions),function(req, res){
+    var id = req.params.id;
+    res.status(200);
+    res.sendFile(`${__dirname}/scripts/interaction/interaction${id}.js`);
+});
+
 app.use('/biomerse', biomerseRoutes);
 
