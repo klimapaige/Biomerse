@@ -8,9 +8,11 @@ var img2 = new Image(); // Image constructor
 img2.src = "http://localhost:4200/bioImages/texture/roughGoldTexture.jpg";
 var material = new xeogl.MetallicMaterial({
     baseColorMap: new xeogl.Texture({
+        src:"http://localhost:4200/bioImages/texture/UVMap.png",
         image: img1
     }),
     roughnessMap: new xeogl.Texture({
+        src:"http://localhost:4200/bioImages/texture/roughGoldTexture.jpg",
         image: img2
     })
 });
@@ -21,3 +23,5 @@ var mesh = new xeogl.Mesh({
     position: [0, 0, 10]
 });
 mesh.visible = true; 
+
+new xeogl.AmbientLight({ color: [1, 1, 1], intensity: 1 });
