@@ -1,3 +1,5 @@
+import * as xeogl from 'http://localhost:4000/biomerse/script/xeogl';
+
 // Create a 2x2x2 box centered at the World-space origin
 var geometry = new xeogl.Geometry({
     // The primitive type - allowed values are

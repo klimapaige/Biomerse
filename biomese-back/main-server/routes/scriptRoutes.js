@@ -22,6 +22,16 @@ biomerseRoutes.route('/process/:id').get(function (req, res) {
     res.sendFile(`/scripts/process/process${id}.js`, { root: dir });
 });
 
+biomerseRoutes.route('/node_modules/*').get(function (req, res) {
+    console.log(req.originalUrl);
+    var location = req.originalUrl;
+    location = location.substring(17);
+    console.log(location);
+    res.status(200);
+    var dir = __dirname.substring(0, __dirname.length - 7);
+    res.sendFile(`/${location}`, { root: dir });
+});
+
 biomerseRoutes.route('/*').get(function (req, res) {
     console.log(req.originalUrl);
     var location = req.originalUrl;
