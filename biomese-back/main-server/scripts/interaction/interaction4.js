@@ -11,7 +11,7 @@ function main() {
     const renderer = new THREE.WebGLRenderer({ canvas });
     //http://localhost:4000/biomerse/script/interaction.l/models/square/square.obj
     const fov = 45;
-    const aspect = 2;  // the canvas default
+    const aspect = 2; // the canvas default
     const near = 0.1;
     const far = 100;
     const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
@@ -22,7 +22,7 @@ function main() {
     controls.update();
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xAA88AA);
+    scene.background = new THREE.Color(0xEEEEEE);
 
     {
         const color = 0xFFFFFF;
@@ -77,7 +77,7 @@ function main() {
         function testClick() {
             console.log('clicked on weird square');
             const info = document.getElementById('info');
-            info.innerHTML = '<div>clicked on weird square</div>';
+            info.innerHTML = `<div class='infoTitle'>Weird Square</div><div>Was actually able to click on weird square</div>`;
         }
         var test;
         const mtlLoader = new MTLLoader();
@@ -86,13 +86,13 @@ function main() {
             const materials = MtlObjBridge.addMaterialsFromMtlLoader(mtlParseResult);
             objLoader.addMaterials(materials);
             objLoader.load('http://localhost:4000/biomerse/script/interaction/models/square/test.obj', (root) => {
-                root.traverse(function (child) {
+                root.traverse(function(child) {
                     if (child instanceof THREE.Mesh) {
                         test = child;
                     }
                 });
                 test.callback = testClick;
-                scene.add(root);    
+                scene.add(root);
 
                 // compute the box that contains all the stuff
                 // from root and below
@@ -110,10 +110,11 @@ function main() {
                 controls.update();
             });
         });
+
         function squareClick() {
             console.log('clicked on square');
             const info = document.getElementById('info');
-            info.innerHTML = '<div>clicked on square</div>';
+            info.innerHTML = `<div class='infoTitle'>Normal Square</div><div>Was actually able to click on the normal square</div>`;
         }
         var square;
         const mtlLoader2 = new MTLLoader();
@@ -122,7 +123,7 @@ function main() {
             const materials = MtlObjBridge.addMaterialsFromMtlLoader(mtlParseResult);
             objLoader.addMaterials(materials);
             objLoader.load('http://localhost:4000/biomerse/script/interaction/models/square/square.obj', (root) => {
-                root.traverse(function (child) {
+                root.traverse(function(child) {
                     if (child instanceof THREE.Mesh) {
                         square = child;
                     }
@@ -204,5 +205,3 @@ function main() {
 }
 
 main();
-
-
