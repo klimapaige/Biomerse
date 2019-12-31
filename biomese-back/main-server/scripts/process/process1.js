@@ -65,7 +65,7 @@ function main() {
         info.innerHTML = formatInfo('Lipid Bilayer', body);
     }
     function potassiumClick() {
-        var body = `Potassium is one of the most important minerals in the body. It helps regulate fluid balance, muscle contractions and nerve signals. What's more, a high-potassium diet may help reduce blood pressure and water retention, protect against stroke and prevent osteoporosis and kidney stones..`;
+        var body = `Potassium is one of the most important minerals in the body. It helps regulate fluid balance, muscle contractions and nerve signals. What's more, a high-potassium diet may help reduce blood pressure and water retention, protect against stroke and prevent osteoporosis and kidney stones.`;
         const info = document.getElementById('info');
         info.innerHTML = formatInfo('Potassium', body);
     }

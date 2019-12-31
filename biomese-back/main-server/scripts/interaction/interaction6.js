@@ -1,10 +1,8 @@
 import * as THREE from 'https://threejsfundamentals.org/threejs/resources/threejs/r110/build/three.module.js';
 import { OrbitControls } from 'https://threejsfundamentals.org/threejs/resources/threejs/r110/examples/jsm/controls/OrbitControls.js';
-import { OBJLoader2 } from 'https://threejsfundamentals.org/threejs/resources/threejs/r110/examples/jsm/loaders/OBJLoader2.js';
-import { MTLLoader } from 'https://threejsfundamentals.org/threejs/resources/threejs/r110/examples/jsm/loaders/MTLLoader.js';
-import { MtlObjBridge } from 'https://threejsfundamentals.org/threejs/resources/threejs/r110/examples/jsm/loaders/obj2/bridge/MtlObjBridge.js';
 import { GLTFLoader } from 'https://threejsfundamentals.org/threejs/resources/threejs/r110/examples/jsm/loaders/GLTFLoader.js'
-function main() {
+function main(data) {
+    console.log('data',data)
     const canvas = document.getElementById('myCanvas');
     var raycaster = new THREE.Raycaster();
     var mouse = new THREE.Vector2();
@@ -50,53 +48,29 @@ function main() {
         return `<div class='infoTitle'>${title}</div><div>${body}</div>`
     }
 
-    function lipidBilayerClick() {
-        var body = `lipid`;
-        const info = document.getElementById('info');
-        info.innerHTML = formatInfo('Lipid Bilayer', body);
-    }
-    function potassiumClick() {
-        var body = `potassium.`;
-        const info = document.getElementById('info');
-        info.innerHTML = formatInfo('Potassium', body);
-    }
-    function potassiumPumpClick() {
-        var body = `potassiumPump`;
-        const info = document.getElementById('info');
-        info.innerHTML = formatInfo('Potassium Pump', body);
-    }
-    function sodiumClick() {
-        var body = `sodium`;
-        const info = document.getElementById('info');
-        info.innerHTML = formatInfo('Sodium', body);
-    }
-    function sodiumPumpClick() {
-        var body = `sodiumPump`;
-        const info = document.getElementById('info');
-        info.innerHTML = formatInfo('Sodium Pump', body);
-
-    }
-    function atpPhosphateClick() {
-        var body = `atp`;
-        const info = document.getElementById('info');
-        info.innerHTML = formatInfo('ATP (Adenosine triphosphate) - Phosphate', body);
-
-    }
-    function atpAdenosineClick() {
-        var body = `atp`;
-        const info = document.getElementById('info');
-        info.innerHTML = formatInfo('ATP (Adenosine triphosphate) - Adenosine', body);
+    var parts = data[0].subparts;
+    function subpartHover(name) {  
+        var quit = false;
+        for (var i = 0; i < parts.length && !quit; i++) {
+            if(name.includes(parts[i].model_part_name)){
+                var body = parts[i].part_description;
+                const info = document.getElementById('info');
+                info.innerHTML = formatInfo(parts[i].part_name, body);
+                quit = true;
+            }
+        }       
 
     }
     function generalClick() {
-        const body = `sodiumPotassiumPump `
+        const body = data[0].interaction_description
         const info = document.getElementById('info');
-        info.innerHTML = formatInfo('Sodium Potassium Pump', body);
+        info.innerHTML = formatInfo(data[0].interaction_name, body);
     }
     generalClick();
 
 
     {
+        
 
         var meshObjects = [];
 
@@ -137,55 +111,30 @@ function main() {
             mixer.update(deltaSeconds);
         }
 
+        var loadingLink = data[0].interaction_link;
         loader.load(
             // resource URL
-            'http://localhost:4000/biomerse/script/interaction/models/sodiumPotassiumPump/sodiumPotassiumPump.gltf',
+            loadingLink,
             // called when the resource is loaded
             function (gltf) {
 
                 scene.add(gltf.scene);
-                //console.log(gltf.scene);
                 gltf.scene.rotation.y = -Math.PI / 4;
-                //gltf.scene.rotation.z = .5;
 
                 gltf.scene.traverse(function (child) {
-                    //console.log(child)
                     if (child instanceof THREE.Mesh) {
-                        //child.rotation.y = -Math.PI / 4;
-                        console.log(child.name);
                         child.callback = () => {
-                            if (child.name.includes("sodium0")) {
-                                sodiumClick();
-                            }
-                            else if (child.name.includes("potassium0")) {
-                                potassiumClick();
-                            }
-                            else if (child.name.includes("BezierCurve")) {
-                                lipidBilayerClick();
-                            }
-                            else if (child.name.includes("potassiumpump")) {
-                                potassiumPumpClick();
-                            }
-                            else if (child.name.includes("sodiumpump")) {
-                                sodiumPumpClick();
-                            } else if (child.name.includes("Sphere.012_0") || child.name.includes("Sphere_0")) {
-                                atpAdenosineClick();
-                            }
-                            else if (child.name.includes("phosphate") || child.name.includes("Sphere")) {//2,1 phosphate Sphere.012_0-a
-                                atpPhosphateClick();
-
-                            }
+                            subpartHover(child.name);
                         };
                         meshObjects.push(child);
                     }
                 });
-                
+
                 mixer = new THREE.AnimationMixer(gltf.scene);
                 gltf.animations.forEach((clip) => {
-                    console.log(clip)
                     mixer.clipAction(clip).play();
                 });
-                console.log('mixer',mixer);
+                
 
                 const box = new THREE.Box3().setFromObject(gltf.scene);
 
@@ -203,15 +152,11 @@ function main() {
             },
             // called while loading is progressing
             function (xhr) {
-
                 console.log((xhr.loaded / xhr.total * 100) + '% loaded');
-
             },
             // called when loading has errors
             function (error) {
-
                 console.log('An error happened');
-
             }
         );
 
@@ -221,15 +166,11 @@ function main() {
             const y = -((event.clientY - renderer.domElement.offsetTop) / renderer.domElement.clientHeight) * 2 + 1;
             mouse.x = x;
             mouse.y = y;
-            console.log('x', x);
-            console.log('y', y);
 
             raycaster.setFromCamera(mouse, camera);
-            console.log('Raycaster', raycaster);
 
             // three.js objects with click handlers we are interested in
             var intersects = raycaster.intersectObjects(meshObjects);
-            console.log('intersects', intersects);
 
             if (intersects.length > 0) {
                 intersects[0].object.callback();
@@ -256,23 +197,26 @@ function main() {
 
 
     function render() {
-        // if(mixer){
-        //     mixer.update(deltaTimeInSeconds) ;
-
-        // }
         if (resizeRendererToDisplaySize(renderer)) {
             const canvas = renderer.domElement;
             camera.aspect = canvas.clientWidth / canvas.clientHeight;
             camera.updateProjectionMatrix();
         }
-
         renderer.render(scene, camera);
-
         requestAnimationFrame(render);
     }
 
     requestAnimationFrame(render);
 
 }
-
-main();
+const link = `http://localhost:4000/biomerse/interaction/6`;
+        fetch(link, {
+            method: 'GET',
+            mode: 'cors',
+            headers: {
+                ...{ 'Content-Type': 'application/json' },
+            },
+        }).then(response => response.json()).then((responseJSON) => {
+            //console.log('responseJson',responseJSON)
+            main(responseJSON);
+        });
