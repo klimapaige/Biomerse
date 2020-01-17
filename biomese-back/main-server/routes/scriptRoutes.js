@@ -5,8 +5,9 @@ const fs = require('fs');
 biomerseRoutes.route('/interaction/:id').get(function (req, res) {
     var id = req.params.id;
     res.status(200);
-    if(id>4){
-        var dir = __dirname.substring(0, __dirname.length - 7);
+    var dir = __dirname.substring(0, __dirname.length - 7);
+    if (id > 4) {
+        console.log(id)
         var add = `\nconst link = 'http://localhost:4000/biomerse/interaction/${id}';
         fetch(link, {
             method: 'GET',
@@ -17,15 +18,16 @@ biomerseRoutes.route('/interaction/:id').get(function (req, res) {
         }).then(response => response.json()).then((responseJSON) => {
             main(responseJSON);
         });`
-    
+
         var fileName = `${dir}/scripts/interaction/interaction.js`;
         var data = fs.readFileSync(fileName).toString();
         let splitArray = data.split('\n');
-        splitArray.splice(splitArray.length-10, 10);
+        splitArray.splice(splitArray.length - 10, 10);
         let result = splitArray.join('\n');
-        fs.writeFileSync(fileName, result+add);
+        fs.writeFileSync(fileName, result + add);
         res.sendFile(`/scripts/interaction/interaction.js`, { root: dir });
-    }else{
+    } else {
+        console.log('hitting here')
         res.sendFile(`/scripts/interaction/interaction${id}.js`, { root: dir });
     }
 });
@@ -33,8 +35,32 @@ biomerseRoutes.route('/interaction/:id').get(function (req, res) {
 biomerseRoutes.route('/process/:id').get(function (req, res) {
     var id = req.params.id;
     res.status(200);
-    var dir = __dirname.substring(0, __dirname.length - 7);
-    res.sendFile(`/scripts/process/process${id}.js`, { root: dir });
+        var dir = __dirname.substring(0, __dirname.length - 7);
+        var add = `\nconst link = 'http://localhost:4000/biomerse/process/${id}';
+        fetch(link, {
+        method: 'GET',
+        mode: 'cors',
+        headers: {
+            ...{ 'Content-Type': 'application/json' },
+        },
+        }).then(response => response.json()).then((responseJSON) => {
+        main(responseJSON);
+        const videoObject = document.getElementById('video');
+        videoObject.onclick = ()=>video(responseJSON);
+        const canvasObject = document.getElementById('model');
+        canvasObject.onclick = ()=>main(responseJSON);
+        });`
+
+        var fileName = `${dir}/scripts/process/process.js`;
+        var data = fs.readFileSync(fileName).toString();
+        let splitArray = data.split('\n');
+        splitArray.splice(splitArray.length - 14, 14);
+        let result = splitArray.join('\n');
+        fs.writeFileSync(fileName, result + add);
+        res.sendFile(`/scripts/process/process.js`, { root: dir });
+    
+    
+    
 });
 
 biomerseRoutes.route('/node_modules/*').get(function (req, res) {
@@ -44,7 +70,7 @@ biomerseRoutes.route('/node_modules/*').get(function (req, res) {
     console.log(location);
     res.status(200);
     var dir = __dirname.substring(0, __dirname.length - 7);
-    
+
     res.sendFile(`/${location}`, { root: dir });
 });
 

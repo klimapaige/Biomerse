@@ -1,16 +1,15 @@
 import * as THREE from 'https://threejsfundamentals.org/threejs/resources/threejs/r110/build/three.module.js';
 import { OrbitControls } from 'https://threejsfundamentals.org/threejs/resources/threejs/r110/examples/jsm/controls/OrbitControls.js';
-import { OBJLoader2 } from 'https://threejsfundamentals.org/threejs/resources/threejs/r110/examples/jsm/loaders/OBJLoader2.js';
-import { MTLLoader } from 'https://threejsfundamentals.org/threejs/resources/threejs/r110/examples/jsm/loaders/MTLLoader.js';
-import { MtlObjBridge } from 'https://threejsfundamentals.org/threejs/resources/threejs/r110/examples/jsm/loaders/obj2/bridge/MtlObjBridge.js';
 import { GLTFLoader } from 'https://threejsfundamentals.org/threejs/resources/threejs/r110/examples/jsm/loaders/GLTFLoader.js'
-function main() {
+
+function main(data) {
+    console.log('data', data)
     var play = document.getElementById("play");
     play.style.visibility = "visible";
-    play.onclick = ()=>{run=true;};
+    play.onclick = () => { run = true; };
     var pause = document.getElementById("pause");
     pause.style.visibility = "visible";
-    pause.onclick = ()=>{run=false;};
+    pause.onclick = () => { run = false; };
     document.getElementById('interactionDiv').innerHTML = `<canvas id='myCanvasP' ref="myCanvasP" />`;
     const canvas = document.getElementById('myCanvasP');
     var raycaster = new THREE.Raycaster();
@@ -98,13 +97,25 @@ function main() {
 
     }
     function generalClick() {
-        const body = `Sodium-potassium pump, in cellular physiology, a protein that has been identified in many cells that maintains the internal concentration of potassium ions [K+] higher than that in the surrounding medium (blood, body fluid, water) and maintains the internal concentration of sodium ions [Na+] lower than that of the surrounding medium. The pump, which has adenosine-triphosphatase (ATPase) activity, traverses the cell membrane and is activated by external [K+] and internal [Na+]. This enzyme uses metabolic energy to transport (pump) Na+ outward and K+ inward. The resting potential of cells and related bioelectric phenomena such as the action potential depend on the steady state difference in concentrations of Na+ and K+ maintained by the pump. Other ion pumps, transporting different ions, have also been identified.`
+        const body = data[0].process_description
         const info = document.getElementById('info');
-        info.innerHTML = formatInfo('Sodium Potassium Pump', body);
+        info.innerHTML = formatInfo(data[0].process_name, body);
     }
     generalClick();
 
+    var parts = data[0].subparts;
+    function subpartHover(name) {
+        var quit = false;
+        for (var i = 0; i < parts.length && !quit; i++) {
+            if (name.includes(parts[i].model_part_name)) {
+                var body = parts[i].part_description;
+                const info = document.getElementById('info');
+                info.innerHTML = formatInfo(parts[i].part_name, body);
+                quit = true;
+            }
+        }
 
+    }
     {
 
         var meshObjects = [];
@@ -139,12 +150,10 @@ function main() {
         //const mtlLoader2 = new MTLLoader();
         var loader = new GLTFLoader();
         var mixer;
-        let animations;
-        var clips;
-
+        var loadingLink = data[0].process_link;
         loader.load(
             // resource URL
-            'http://localhost:4000/biomerse/script/process/models/sodiumPotassiumPump/sodiumPotassiumPump.gltf',
+            loadingLink,
             // called when the resource is loaded
             function (gltf) {
 
@@ -152,41 +161,21 @@ function main() {
                 gltf.scene.rotation.y = -Math.PI / 4;
 
                 gltf.scene.traverse(function (child) {
+                    console.log(child.name);
                     if (child instanceof THREE.Mesh) {
-                        console.log(child.name);
                         child.callback = () => {
-                            if (child.name.includes("sodium0")) {
-                                sodiumClick();
-                            }
-                            else if (child.name.includes("potassium0")) {
-                                potassiumClick();
-                            }
-                            else if (child.name.includes("BezierCurve")) {
-                                lipidBilayerClick();
-                            }
-                            else if (child.name.includes("potassiumpump")) {
-                                potassiumPumpClick();
-                            }
-                            else if (child.name.includes("sodiumpump")) {
-                                sodiumPumpClick();
-                            } else if (child.name.includes("Sphere.012_0") || child.name.includes("Sphere_0")) {
-                                atpAdenosineClick();
-                            }
-                            else if (child.name.includes("phosphate") || child.name.includes("Sphere")) {//2,1 phosphate Sphere.012_0-a
-                                atpPhosphateClick();
-
-                            }
+                            subpartHover(child.name);
                         };
                         meshObjects.push(child);
                     }
                 });
-                
+
                 mixer = new THREE.AnimationMixer(gltf.scene);
                 gltf.animations.forEach((clip) => {
                     console.log(clip)
                     mixer.clipAction(clip).play();
                 });
-                console.log('mixer',mixer);
+                console.log('mixer', mixer);
 
                 const box = new THREE.Box3().setFromObject(gltf.scene);
 
@@ -258,9 +247,9 @@ function main() {
 
     function render() {
         var delta = clock.getDelta();
-            if (mixer != null&&run) {
-                mixer.update(delta);
-            };
+        if (mixer != null && run) {
+            mixer.update(delta);
+        };
         if (resizeRendererToDisplaySize(renderer)) {
             const canvas = renderer.domElement;
             camera.aspect = canvas.clientWidth / canvas.clientHeight;
@@ -276,15 +265,25 @@ function main() {
 
 }
 
-function video(){
+function video(data) {
     document.getElementById("play").style.visibility = "hidden";
     document.getElementById("pause").style.visibility = "hidden";
-    document.getElementById('interactionDiv').innerHTML = `<video id="videoP" src="http://localhost:4000/biomerse/script/process/models/sodiumPotassiumPump/sodiumPotassiumPump.mp4" controls="true"></video>`;
-//<video id="video" src="http://localhost:4000/biomerse/script/process/models/sodiumPotassiumPump/sodiumPotassiumPump.mp4" controls="true"></video>
+    document.getElementById('interactionDiv').innerHTML = `<video id="videoP" src="${data[0].video_link}" controls="true"></video>`;
 }
 
-const videoObject = document.getElementById('video');
-videoObject.onclick = video;
-const canvasObject = document.getElementById('model');
-canvasObject.onclick = main;
-main();
+
+
+const link = 'http://localhost:4000/biomerse/process/1';
+fetch(link, {
+    method: 'GET',
+    mode: 'cors',
+    headers: {
+        ...{ 'Content-Type': 'application/json' },
+    },
+}).then(response => response.json()).then((responseJSON) => {
+    main(responseJSON);
+    const videoObject = document.getElementById('video');
+    videoObject.onclick = ()=>video(responseJSON);
+    const canvasObject = document.getElementById('model');
+    canvasObject.onclick = ()=>main(responseJSON);
+});

@@ -102,36 +102,29 @@ function main(data) {
         //const mtlLoader2 = new MTLLoader();
         var loader = new GLTFLoader();
         var mixer;
-        let animations;
-        var clips;
 
         function update() {
             mixer.update(deltaSeconds);
         }
-
+        var object = null;
         var loadingLink = data[0].interaction_link;
         loader.load(
             // resource URL
             loadingLink,
             // called when the resource is loaded
             function (gltf) {
-
+                object = gltf;
                 scene.add(gltf.scene);
                 gltf.scene.rotation.y = -Math.PI / 4;
 
                 gltf.scene.traverse(function (child) {
-                    console.log(child.name);
+                    //console.log(child.name);
                     if (child instanceof THREE.Mesh) {
                         child.callback = () => {
                             subpartHover(child.name);
                         };
                         meshObjects.push(child);
                     }
-                });
-
-                mixer = new THREE.AnimationMixer(gltf.scene);
-                gltf.animations.forEach((clip) => {
-                    mixer.clipAction(clip).play();
                 });
 
 
@@ -178,8 +171,29 @@ function main(data) {
             }
 
         }
+        var horizontal_degrees = 0;
+        var vertical_degrees = 0;
+        function onKeyDown(event) {
+            //console.log(object.scene.rotation);
+            if(event.key==='w'){
+                object.scene.position.y+=1;
+            }else if(event.key==='s'){
+                object.scene.position.y-=1;
+            }else if(event.key==='a'){
+                object.scene.position.x-=1;
+            }else if(event.key==='d'){
+                object.scene.position.x+=1;
+            }
+            console.log(object.scene.position);
+            // var originX = camera.position.x;
+            // var originY = camera.position.y;
+            // var originZ = camera.position.z;
+            // console.log(`(${originX}, ${originY}, ${originZ})`);
+            
+        }
 
         canvas.onmousemove = onDocumentMouseDown;
+        canvas.onkeydown=onKeyDown;
 
     }
 
@@ -209,7 +223,7 @@ function main(data) {
 
 }
 
-const link = 'http://localhost:4000/biomerse/interaction/8';
+const link = 'http://localhost:4000/biomerse/interaction/6';
         fetch(link, {
             method: 'GET',
             mode: 'cors',

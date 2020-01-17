@@ -18,6 +18,14 @@ biomerseRoutes.route('/:id').get(function(req, res){
     })
 });
 
+biomerseRoutes.route('/search/:word').get(function(req, res){
+    var word = req.params.word;
+    res.status(200);
+    db.collection('Interactions').find({interaction_name:new RegExp(`.*${word}.*`, 'i')}).toArray(function(err, results) {
+        res.status(200).json(results);
+    })
+});
+
 biomerseRoutes.route('/').get(function(req, res){
     db.collection('Interactions').find().toArray(function(err, results) {
         //res.header("Access-Control-Allow-Origin", 'http://localhost:3000');
