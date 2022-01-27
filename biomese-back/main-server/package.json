@@ -16,7 +16,7 @@
     "express": "^4.17.1",
     "mongodb": "^3.3.3",
     "mongoose": "^5.7.4",
-    "three": "^0.89.0",
+    "three": "^0.137.0",
     "three-full": "^17.1.0",
     "three.interaction": "^0.2.2"
   }
